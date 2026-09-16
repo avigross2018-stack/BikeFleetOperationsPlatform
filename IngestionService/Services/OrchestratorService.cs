@@ -23,9 +23,50 @@ namespace IngestionService.Services
 
         public async Task RunAsync(CancellationToken cancellationToken)
         {
+            var runStationInfo = RunStationInfo(cancellationToken);
+            var runVehicleTypes = RunVehicleTypes(cancellationToken);
+            var runStationStatus = RunStationStatus(cancellationToken);
+
+            await Task.WhenAll(
+                runStationInfo,
+                runVehicleTypes,
+                runStationStatus
+            );
+            
+        }
+
+        public async Task RunStationInfo(CancellationToken cancellationToken)
+        {
             await _stationInformationService.GetAndPublishStationInfo(cancellationToken);
-            await _stationStatusService.GetAndPublishStationStatus(cancellationToken);
+
+            using var timer = new PeriodicTimer(TimeSpan.FromHours(1));
+
+            while (await timer.WaitForNextTickAsync(cancellationToken))
+            {
+                await _stationInformationService.GetAndPublishStationInfo(cancellationToken);
+            }
+        }
+
+        public async Task RunVehicleTypes(CancellationToken cancellationToken)
+        {
             await _vehicleTypeService.GetAndPublishVehicleType(cancellationToken);
+
+            using var timer = new PeriodicTimer(TimeSpan.FromHours(1));
+
+            while (await timer.WaitForNextTickAsync(cancellationToken))
+            {
+                await _vehicleTypeService.GetAndPublishVehicleType(cancellationToken);
+            }
+        }
+        
+        public async Task RunStationStatus(CancellationToken cancellationToken)
+        {
+            using var timer = new PeriodicTimer(TimeSpan.FromMinutes(1));
+
+            while (await timer.WaitForNextTickAsync(cancellationToken))
+            {
+                await _stationStatusService.GetAndPublishStationStatus(cancellationToken);
+            }
         }
     }
 }

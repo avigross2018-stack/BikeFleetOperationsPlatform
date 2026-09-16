@@ -14,7 +14,9 @@ var config = new ConfigurationBuilder()
 Log.Logger = new LoggerConfiguration()
         .MinimumLevel.Debug()
         .WriteTo.Console()
-        .WriteTo.File("logs/IngestionApp-.log", rollingInterval: RollingInterval.Day)
+        .WriteTo.File("logs/IngestionApp-.log",
+                rollingInterval: RollingInterval.Day,
+                fileSizeLimitBytes: 100 * 1024 * 1024)
         .CreateLogger();
         
     
