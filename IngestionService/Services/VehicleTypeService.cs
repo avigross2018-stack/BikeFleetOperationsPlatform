@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Numerics;
 using System.Threading.Tasks;
+using IngestionService.Models;
 using IngestionService.Models.VehicleType;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
@@ -62,6 +63,7 @@ namespace IngestionService.Services
                 {
                     continue;
                 }
+
 
                 await _producerService.SendAsync<VehicleTypeDto>(
                     vehicleType, _topicName, cancellationToken

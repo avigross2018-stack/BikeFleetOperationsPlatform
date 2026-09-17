@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using IngestionService.Models;
 using IngestionService.Models.StationIfo;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
@@ -64,8 +65,18 @@ namespace IngestionService.Services
                     continue;
                 }
 
-                await _producerService.SendAsync<StationInfoDto>(
-                    station, _topicName, cancellationToken
+                var kafkaModel = new StationInfoKafka
+                {
+                    StationId = station.StationId,
+                    Name = station.Name,
+                    ShortName = station.ShortName,
+                    Longitude = station.Longitude,
+                    Latitude = station.Latitude,
+                    RegionId = station.RegionId,
+                    Capacity = station.Capacity
+                };
+                await _producerService.SendAsync<StationInfoKafka>(
+                    kafkaModel, _topicName, cancellationToken
                 );
                 _logger.LogInformation("Send Station Info to Kafka successfully");
             }

@@ -49,6 +49,12 @@ services:
       REDIS_ARGS: --appendonly yes
     volumes:
       - redis-data:/data/lib/redis
+    healthcheck:
+      test: [ "CMD", "redis-cli", "--raw", "incr", "ping" ]
+      interval: 10s
+      timeout: 3s
+      retries: 3
+      start_period: 5s
 
   mysql:
     image: mysql:latest
@@ -68,7 +74,59 @@ services:
       retries: 10
       start_period: 30s
   
+  mongo:
+    image: mongo
+    container_name: mongo-db
+    restart: always
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: ${MONGO_DB_USERNAME}
+      MONGO_INITDB_ROOT_PASSWORD: ${MONGO_DB_PASSWORD}
+      MONGO_INITDB_DATABASE: ${MONGO_DATABASE}
+    ports:
+      - "27017:27017"
+
+    healthcheck:
+      test: ["CMD", "mongosh", "--eval", "db.adminCommand('ping').ok", "--quiet"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
+    
+    volumes:
+      - mongo-data:/data/db
+
+  ingestion-service:
+    build:
+      context: ./IngestionService
+      dockerfile: Dockerfile
+    env_file:
+      - ./.env
+    depends_on:
+      kafka:
+        condition: service_healthy
+    restart: on-failure
+
+  processing-service:
+    build:
+      context: ./ProcessingService
+      dockerfile: Dockerfile
+    entrypoint: ["/bin/sh", "-c", "sleep 12s && exec dotnet ProcessingService.dll"]
+    env_file:
+        - ./.env
+    depends_on:
+      kafka:
+        condition: service_healthy
+      mongo:
+        condition: service_healthy
+      mysql:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      ingestion-service:
+        condition: service_started
+    restart: on-failure
 
 volumes:
   redis-data:
   mysql_data:
+  mongo-data:

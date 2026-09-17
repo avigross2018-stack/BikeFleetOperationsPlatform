@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using IngestionService.Models;
 using IngestionService.Models.StationStatus;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
@@ -64,8 +65,22 @@ namespace IngestionService.Services
                     continue;
                 }
 
-                await _producerService.SendAsync<StationStatusDto>(
-                    station, _topicName, cancellationToken
+                var kafkaModel = new StationStatusKafka
+                {
+                    StationId = station.StationId,
+                    NumBikesAvailable = station.NumBikesAvailable,
+                    NumBikesDisabled = station.NumBikesDisabled,
+                    NumDocksAvailable = station.NumDocksAvailable,
+                    NumDocksDisabled = station.NumDocksDisabled,
+                    NumEbikesAvailable = station.NumEbikesAvailable,
+                    IsInstalled = station.IsInstalled,
+                    IsRenting = station.IsRenting,
+                    IsReturning = station.IsReturning,
+                    LastReported = station.LastReported
+                };
+
+                await _producerService.SendAsync<StationStatusKafka>(
+                    kafkaModel, _topicName, cancellationToken
                 );
                 _logger.LogInformation("Send Station Status to Kafka successfully");
             }
