@@ -1,0 +1,19 @@
+{
+  "kafka.clusters.selected": "data-bG9jYWxob3N0OjkwOTI",
+  "sqltools.connections": [
+    {
+      "mysqlOptions": {
+        "authProtocol": "default",
+        "enableSsl": "Disabled"
+      },
+      "ssh": "Disabled",
+      "previewLimit": 50,
+      "server": "localhost",
+      "port": 3307,
+      "driver": "MySQL",
+      "name": "bikes",
+      "database": "bikesDb",
+      "username": "root"
+    }
+  ]
+}
